@@ -5,12 +5,17 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"os"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/slack-go/slack"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	postings, err := GetJobPostings("https://boards.greenhouse.io/github")
+	slackApiKey := getVarFromENV("slack")
+
+	postings, err := getJobPostings("https://boards.greenhouse.io/github")
 	if err != nil {
 		log.Println(err)
 	}
@@ -18,8 +23,19 @@ func main() {
 	fmt.Printf(postings)
 }
 
-// GetJobPostings gets the latest jobs given and returns them as a list
-func GetJobPostings(url string) (string, error) {
+func getVarFromENV(key string) string {
+	// load .env file
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	return os.Getenv(key)
+}
+
+// getJobPostings gets the latest jobs given and returns them as a list
+func getJobPostings(url string) (string, error) {
 
 	// Get the HTML
 	resp, err := http.Get(url)
